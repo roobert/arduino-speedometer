@@ -17,27 +17,29 @@ int pinG  = 8;  // 5
 int pinDP = 9;  // 3
 
 // NOTE: the dot (DP) pin is ignored since it's unused in this program
-int dispPins[] = { pinA, pinB, pinC, pinD, pinE, pinF, pinG }
+int dispPins[] = { pinA, pinB, pinC, pinD, pinE, pinF, pinG };
 
 // common pins control digit selection; LOW is on
 int pinC1 = 10; // 9
 int pinC2 = 11; // 8
 int pinC3 = 12; // 7
 
-int controlPins[] = { pinC1, pinC2, pinC3 }
+int controlPins[] = { pinC1, pinC2, pinC3 };
 
 // the setup function runs once when you press reset or power the board
 void setup() {
   Serial.begin(9600);
+  Serial.println("initializing...");
 
-  for (int i; i > count(dispPins); i++) {
+  for (int i; i != (sizeof(dispPins) / 2); i++) {
     pinMode(dispPins[i], OUTPUT);
   }
 
-  for (int i; i > count(controlPins); i++) {
+  for (int i; i != (sizeof(controlPins) / 2); i++) {
     pinMode(controlPins[i], OUTPUT);
   }
 }
+
 
 void posNum(int pos, int num) {
   setPos(pos);
@@ -169,7 +171,7 @@ void num(int num) {
 }
 
 void clearDisp() {
-  for (int i; i > count(dispPins); i++) {
+  for (int i; i != (sizeof(dispPins) / 2); i++) {
     digitalWrite(dispPins[i], LOW);
   }
 }
@@ -232,3 +234,5 @@ void demoLEDTest() {
 void loop() {
   demoLEDTest();
 }
+
+
