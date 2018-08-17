@@ -1,3 +1,4 @@
+
 // LED speed-o-meter
 //
 // inspiration
@@ -8,8 +9,8 @@
 //
 // 7447 7SD decoder
 // https://www.electroschematics.com/wp-content/uploads/2013/01/7447-datasheet.pdf
+// works with anode display
 
-#include <math.h>
 
 // LEDs: A-F clockwise from top; G is the bar; DP is the dot; HIGH is on
 // NOTE: pin D13 is used as output rather than input since it's connected
@@ -25,27 +26,40 @@
 // int pinG  = 8;      // 5         // 14
 // int pinDP = 9;      // 3         //
 
-// decoder pins
-int pinDecA = 3;
-int pinDecB = 4;
-int pinDecC = 5;
-int pinDecD = 6;
+// decoder pins - for breadboard version with arduino nano
+//int pinDecA = 3;
+//int pinDecB = 4;
+//int pinDecC = 5;
+//int pinDecD = 6;
+
+// decoder pins - for attiny84
+int pinDecA = 0;
+int pinDecB = 1;
+int pinDecC = 3;
+int pinDecD = 4;
 
 int decoderPins[] = { pinDecA, pinDecB, pinDecC, pinDecD };
 
 // reed switch
-int pinReed = 2;
+int pinReed = 0;
 
 // NOTE: the dot (DP) pin is ignored since it's unused in this program
 //int dispPins[] = { pinA, pinB, pinC, pinD, pinE, pinF, pinG };
 
-// common pins control digit selection; LOW is on
-int pinC1 = 10; // 12
-int pinC2 = 11; // 9
-int pinC3 = 12; // 8
+// common pins control digit selection; LOW is on - arduino nano
+//int pinC1 = 10; // 12
+//int pinC2 = 11; // 9
+//int pinC3 = 12; // 8
+
+// common pins control digit selection; LOW is on - attiny84
+int pinC1 = 6; // 12
+int pinC2 = 7; // 9
+int pinC3 = 8; // 8
+
 
 int controlPins[] = { pinC1, pinC2, pinC3 };
 
+/* this map is backwards..
 int digits[10][4] = {
   { 0,0,0,0 },  // = 0
   { 0,0,0,1 },  // = 1
@@ -58,6 +72,21 @@ int digits[10][4] = {
   { 1,0,0,0 },  // = 8
   { 1,0,0,1 }   // = 9
 };
+*/
+
+// these values are reversed so they are written to the correct pins
+int digits[10][4] = {
+  { 0,0,0,0 },  // = 0
+  { 1,0,0,0 },  // = 1
+  { 0,1,0,0 },  // = 2
+  { 1,1,0,0 },  // = 3
+  { 0,0,1,0 },  // = 4
+  { 1,0,1,0 },  // = 5
+  { 0,1,1,0 },  // = 6
+  { 1,1,1,0 },  // = 7
+  { 0,0,0,1 },  // = 8
+  { 1,0,0,1 }   // = 9
+};
 
 // reed switch config
 int switchPin = 2;
@@ -68,12 +97,8 @@ int reedCount;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
-  Serial.begin(57600);
-  Serial.println("initializing...");
-
-  //for (int i; i != (sizeof(dispPins) / 2); i++) {
-  //  pinMode(dispPins[i], OUTPUT);
-  //}
+  //Serial.begin(57600);
+  //Serial.println("initializing...");
 
   for (int i; i != (sizeof(controlPins) / 2); i++) {
     pinMode(controlPins[i], OUTPUT);
@@ -112,156 +137,38 @@ void setPos(int pos) {
   }
 }
 
+// convert digit to BCD and write to decoder pins
+// FIXME - this should support writing the forward map value of bits backwards
 void setNum(int num) {
   for (int i = 0; i != 4; i++) {
     digitalWrite(decoderPins[i], digits[num][i]);
   }
 }
 
-//void setNum(int num) {
-//  switch(num) {
-//    case 0:
-//      digitalWrite(pinA,  HIGH);
-//      digitalWrite(pinB,  HIGH);
-//      digitalWrite(pinC,  HIGH);
-//      digitalWrite(pinD,  HIGH);
-//      digitalWrite(pinE,  HIGH);
-//      digitalWrite(pinF,  HIGH);
-//      digitalWrite(pinG,  LOW);
-//      break;
-//    case 1:
-//      digitalWrite(pinA,  LOW);
-//      digitalWrite(pinB,  HIGH);
-//      digitalWrite(pinC,  HIGH);
-//      digitalWrite(pinD,  LOW);
-//      digitalWrite(pinE,  LOW);
-//      digitalWrite(pinF,  LOW);
-//      digitalWrite(pinG,  LOW);
-//      break;
-//    case 2:
-//      digitalWrite(pinA,  HIGH);
-//      digitalWrite(pinB,  HIGH);
-//      digitalWrite(pinC,  LOW);
-//      digitalWrite(pinD,  HIGH);
-//      digitalWrite(pinE,  HIGH);
-//      digitalWrite(pinF,  LOW);
-//      digitalWrite(pinG,  HIGH);
-//      break;
-//    case 3:
-//      digitalWrite(pinA,  HIGH);
-//      digitalWrite(pinB,  HIGH);
-//      digitalWrite(pinC,  HIGH);
-//      digitalWrite(pinD,  HIGH);
-//      digitalWrite(pinE,  LOW);
-//      digitalWrite(pinF,  LOW);
-//      digitalWrite(pinG,  HIGH);
-//      break;
-//    case 4:
-//      digitalWrite(pinA,  LOW);
-//      digitalWrite(pinB,  HIGH);
-//      digitalWrite(pinC,  HIGH);
-//      digitalWrite(pinD,  LOW);
-//      digitalWrite(pinE,  LOW);
-//      digitalWrite(pinF,  HIGH);
-//      digitalWrite(pinG,  HIGH);
-//      break;
-//    case 5:
-//      digitalWrite(pinA,  HIGH);
-//      digitalWrite(pinB,  LOW);
-//      digitalWrite(pinC,  HIGH);
-//      digitalWrite(pinD,  HIGH);
-//      digitalWrite(pinE,  LOW);
-//      digitalWrite(pinF,  HIGH);
-//      digitalWrite(pinG,  HIGH);
-//      break;
-//    case 6:
-//      digitalWrite(pinA,  HIGH);
-//      digitalWrite(pinB,  LOW);
-//      digitalWrite(pinC,  HIGH);
-//      digitalWrite(pinD,  HIGH);
-//      digitalWrite(pinE,  HIGH);
-//      digitalWrite(pinF,  HIGH);
-//      digitalWrite(pinG,  HIGH);
-//      break;
-//    case 7:
-//      digitalWrite(pinA,  HIGH);
-//      digitalWrite(pinB,  HIGH);
-//      digitalWrite(pinC,  HIGH);
-//      digitalWrite(pinD,  LOW);
-//      digitalWrite(pinE,  LOW);
-//      digitalWrite(pinF,  LOW);
-//      digitalWrite(pinG,  LOW);
-//      break;
-//    case 8:
-//      digitalWrite(pinA,  HIGH);
-//      digitalWrite(pinB,  HIGH);
-//      digitalWrite(pinC,  HIGH);
-//      digitalWrite(pinD,  HIGH);
-//      digitalWrite(pinE,  HIGH);
-//      digitalWrite(pinF,  HIGH);
-//      digitalWrite(pinG,  HIGH);
-//      break;
-//    case 9:
-//      digitalWrite(pinA,  HIGH);
-//      digitalWrite(pinB,  HIGH);
-//      digitalWrite(pinC,  HIGH);
-//      digitalWrite(pinD,  HIGH);
-//      digitalWrite(pinE,  LOW);
-//      digitalWrite(pinF,  HIGH);
-//      digitalWrite(pinG,  HIGH);
-//      break;
-//  }
-//}
-
+// write each number to a column
 void num(int num) {
-  // 3 <= 3 yes
-  // 2 <= 3 yes 
-  // 1 <= 3 yes
-  //
-  // 3 <= 2 no
-  // 2 <= 2 yes
-  // 1 <= 2 yes
-  //
-  // 3 <= 1 no
-  // 2 <= 1 no
-  // 1 <= 1 yes
-  int nl = numLength(num);
-
-  for (int i = 3; i > 0; i--) {
-    //Serial.println(i);
-    //Serial.println(nl);
-    //Serial.println();
-    //if (i <= nl) {    
+  for (int i = 1; i < 4; i++) {  
     posNum(i, (num % 10));
-    //}
     num /= 10;
-    delay(5);
+    delay(1);
   }
 }
-
-//void clearDisp() {
-//  for (int i; i != (sizeof(dispPins) / 2); i++) {
-//    digitalWrite(dispPins[i], LOW);
-//  }
-//}
 
 void demoCount(int count) {
   for (int i; i < count; i++) {
     num(i);
-    delay(10);
+    delay(20);
   }
 }
 
 void demoLEDTest() {
   for (int i; i < 10; i++) {
-    //int a = (i * 10) * i;
-    //int b = (b * 10) * i;
     num(i);
-    delay(100);
-    //Serial.println(i);
+    delay(20);
   }
 }
 
+/*
 void reedSwitchDemo() {
   byte switchState = digitalRead(switchPin);
   if (switchState != oldSwitchState) {
@@ -269,15 +176,16 @@ void reedSwitchDemo() {
       switchPressTime = millis();
       oldSwitchState = switchState;
       if (switchState == LOW) {
-        Serial.println("Switch closed.");
+        //Serial.println("Switch closed.");
       } else {
-        Serial.println("Switch opened.");
+        //Serial.println("Switch opened.");
       }
       reedCount++;
-      Serial.println(reedCount);
+      //Serial.println(reedCount);
     }
   }
 }
+*/
 
 int numLength(int i)
 {
@@ -291,8 +199,21 @@ int numLength(int i)
 }
 
 void loop() {
-  demoLEDTest();
-  //demoCount(99);
-  //num(1);
-  //delay(10000);
+  demoCount(999);
+
+  // a good way to test chip / cables are working is trace along wires and check they are all LOW
+  //setPos(1);
+  //digitalWrite(pinDecA, 0);
+  //digitalWrite(pinDecB, 0);
+  //digitalWrite(pinDecC, 0);
+  //digitalWrite(pinDecD, 0);
+  //delay(50);
+
+  // light all the LEDs (digit 8) then trace the cables checking they are all HIGH
+  //setPos(1);
+  //digitalWrite(pinDecA, 0);
+  //digitalWrite(pinDecB, 0);
+  //digitalWrite(pinDecC, 0);
+  //digitalWrite(pinDecD, 1);
+  //delay(50);
 }
