@@ -1,6 +1,6 @@
 void loop() {
-  //demoHES();
- 
+  demoHES();
+
   //demoCount(999);
 
   //displayMph();

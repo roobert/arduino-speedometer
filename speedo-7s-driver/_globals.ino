@@ -28,10 +28,13 @@
 // hall effect sensor config
 byte oldSwitchState = LOW;
 //const unsigned long debounceTime = 10;
-unsigned long switchPressTime;
+unsigned long switchCloseTime;
 long countHESOpen;
 long countHESClosed;
 int mph;
+int revolutions = 0;
+int timer = 0;
+int elapsedTime;
 
 // at 100mph, 1 rotation takes: 1000ms / 23.16rps =~ 44ms
 // if we get a read more often than ~44ms then disregard it.
