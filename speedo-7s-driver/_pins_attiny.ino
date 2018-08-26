@@ -1,14 +1,15 @@
 /*
 
-  ATTINY44 / ATTINY84
+                ATTINY44 / ATTINY84
+                      pinout
 
-     VCC -###- GND
-  pin 10 -###- pin 0
-   pin 9 -###- pin 1
-     RST -###- pin 2
-   pin 8 -###- pin 3
-   pin 7 -###- pin 4
-   pin 6 -###- pin 5
+                  VCC -####- GND
+               pin 10 -####- pin 0 - decoderA
+                pin 9 -####- pin 1 - decoderB
+                  RST -####- pin 2 - doesnt work with decoder?
+ control pin3 - pin 8 -####- pin 3 - decoderC
+ control pin2 - pin 7 -####- pin 4 - decoderD
+ control pin1 - pin 6 -####- pin 5 - HES
 
 */
 
